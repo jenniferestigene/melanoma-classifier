@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+venv/
+melanoma_cancer_dataset/
+melanoma_training_data.npy
+melanoma_testing_data.npy
+saved_model.pth
