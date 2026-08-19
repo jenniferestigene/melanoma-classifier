@@ -31,10 +31,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 net = Net().to(device)
 print(f"Using device: {device}")
 
+# Confirm only the final layer's parameters are trainable
+trainable_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
+total_params = sum(p.numel() for p in net.parameters())
+print(f"Trainable parameters: {trainable_params:,} / {total_params:,}")
+
 mean = mean.to(device)
 std = std.to(device)
 
-optimizer = optim.Adam(net.parameters(), lr=0.0001)  # lower LR - see note below
+optimizer = optim.Adam(net.parameters(), lr=0.001) 
 loss_function = nn.CrossEntropyLoss()
 
 batch_size = 32  # smaller batch size - ResNet18 uses more memory than the small CNN
