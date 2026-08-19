@@ -11,10 +11,9 @@ class Net(nn.Module):
         # Load ResNet18 with weights pretrained on ImageNet (1.2M+ images, 1000 classes)
         self.resnet = models.resnet18(weights='IMAGENET1K_V1')
 
-        # ResNet18's final layer outputs 1000 classes (ImageNet's categories).
-        # We replace it with a new layer outputting just 2 classes: benign, malignant.
-        # This new layer starts with random weights and is what actually gets
-        # trained on your dataset — everything before it is the pretrained backbone.
+        for param in self.resnet.parameters():
+            param.requires_grad = False
+            
         num_features = self.resnet.fc.in_features
         self.resnet.fc = nn.Linear(num_features, 2)
 
