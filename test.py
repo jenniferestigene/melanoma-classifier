@@ -1,9 +1,8 @@
 import numpy as np
-import torch 
-from model import Net 
+import torch
+from model import Net
 
 
-# 100x100 pixels 
 img_size = 100
 
 
@@ -12,47 +11,28 @@ net = Net().to(device)
 net.load_state_dict(torch.load("saved_model.pth", map_location=device))
 net.eval()
 
+mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1).to(device)
+std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1).to(device)
+
 
 testing_data = np.load("melanoma_testing_data.npy", allow_pickle=True)
 
-
-# for row in testing_data:
-#     print(row[0])
-#     print(row[1])
-#     print()
-#     print()
-#     input()
-
-
-# Putting all the image arrays into this tensor
 test_X = torch.Tensor(np.array([item[0] for item in testing_data]))
-test_X = test_X / 255
+test_X = test_X / 255.0
 
-# for row in test_X:
-#     print(row)
-#     print()
-#     input()
-
-
-# one-hot vector labels tensor
-test_y = torch.Tensor( [item[1] for item in testing_data] )
+test_y = torch.Tensor(np.array([item[1] for item in testing_data]))
 
 
 correct = 0
 total = 0
 
-# PyTorch will automatically keep track of the gradients unless you tell it not to (could be wasting compute)
 with torch.no_grad():
-    # tells PyTorch to not automatically keep track of gradients
-
     for i in range(len(test_X)):
 
-        # real label:
-            # [0,1]
-        # model guess (example):
-            # [0.34, 0.66]
+        img = test_X[i].view(-1, 3, img_size, img_size).to(device)
+        img = (img - mean) / std
 
-        output = net(test_X[i].view(-1, 3, img_size, img_size).to(device))[0]
+        output = net(img)[0]
 
         if output[0] >= output[1]:
             guess = "Benign"
@@ -65,7 +45,6 @@ with torch.no_grad():
             real_class = "Benign"
         else:
             real_class = "Malignant"
-
 
         if guess == real_class:
             correct += 1
