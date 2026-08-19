@@ -5,56 +5,46 @@ import numpy as np
 from model import Net
 
 
-
-# 100x100 pixels
 img_size = 100
-
 
 training_data = np.load("melanoma_training_data.npy", allow_pickle=True)
 
-
-# for row in training_data:
-#     print(row[0])
-#     print(row[1])
-#     print()
-#     print()
-#     input()
-
-
-# Putting all the image arrays into this tensor
 train_X = torch.Tensor(np.array([item[0] for item in training_data]))
-train_X = train_X / 255
 
-# for row in train_X:
-#     print(row)
-#     print()
-#     input()
+# ImageNet normalization: 
+train_X = train_X / 255.0
 
+mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1)
+std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1)
 
-# one-hot vector labels tensor
-train_y = torch.Tensor( [item[1] for item in training_data] )
+train_y = torch.Tensor(np.array([item[1] for item in training_data]))
+
+# Validation set
+val_size = int(0.1 * len(train_X))
+val_X, val_y = train_X[:val_size], train_y[:val_size]
+train_X, train_y = train_X[val_size:], train_y[val_size:]
+
+print(f"Training on {len(train_X)} images, validating on {len(val_X)} images")
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 net = Net().to(device)
 print(f"Using device: {device}")
 
+mean = mean.to(device)
+std = std.to(device)
 
-optimizer = optim.Adam(net.parameters(), lr=0.001)
-
+optimizer = optim.Adam(net.parameters(), lr=0.0001)  # lower LR - see note below
 loss_function = nn.CrossEntropyLoss()
 
-
-# how many images you're passing through at once
-batch_size = 100
-
-
-# how many times we are passing through the training data
-epochs = 20
+batch_size = 32  # smaller batch size - ResNet18 uses more memory than the small CNN
+epochs = 10       # fewer epochs needed - pretrained weights converge faster
 
 
 for epoch in range(epochs):
     epoch_loss = 0
+    net.train()
+
     for i in range(0, len(train_X), batch_size):
 
         print(f"EPOCH {epoch+1}, fraction complete: {i/len(train_X)}")
@@ -65,27 +55,37 @@ for epoch in range(epochs):
         batch_X = batch_X.to(device)
         batch_y = batch_y.to(device)
 
-        # resets gradients of model parameters to zero before this pass
+        batch_X = (batch_X - mean) / std  # apply ImageNet normalization
+
         optimizer.zero_grad()
         outputs = net(batch_X)
-        # calculates the loss between the predicted outputs and the actual image one-hot vector labels
         loss = loss_function(outputs, batch_y)
-
-        # real label:
-                # [0,1]
-        # model guess (example):
-                # [0.34, 0.66]
-
-
-        # backpropagation calculates the gradients of the loss with respect to model parameters
         loss.backward()
-        # optimizer updates the model parameters based on the gradient we just calculated
         optimizer.step()
 
         epoch_loss += loss.item()
 
-    print(f"Epoch {epoch+1}/{epochs} - avg loss: {epoch_loss/(len(train_X)/batch_size):.4f}")
+    avg_loss = epoch_loss / (len(train_X) / batch_size)
 
+    # Validation accuracy check after every epoch
+    net.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for i in range(len(val_X)):
+            real_class = torch.argmax(val_y[i])
+            img = val_X[i].view(-1, 3, img_size, img_size).to(device)
+            img = (img - mean) / std
+            output = net(img)[0]
+            predicted_class = torch.argmax(output)
+
+            if predicted_class.cpu() == real_class:
+                correct += 1
+            total += 1
+
+    val_accuracy = correct / total
+    print(f"Epoch {epoch+1}/{epochs} - avg loss: {avg_loss:.4f} - val accuracy: {val_accuracy:.4f}")
 
 
 torch.save(net.state_dict(), "saved_model.pth")
+print("Model saved to saved_model.pth")
