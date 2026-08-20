@@ -19,7 +19,7 @@ responsibly be used for.
 
 ## Dataset
 
-- **Source:** [Melanoma Cancer Image Dataset](https://www.kaggle.com/datasets/bhaveshmittal/melanoma-cancer-dataset) (Kaggle)
+- **Source:** [Melanoma Cancer Image Dataset](https://www.kaggle.com/datasets/hasnainjaved/melanoma-skin-cancer-dataset-of-10000-images?resource=download) (Kaggle)
 - **Classes:** benign, malignant (binary classification)
 - **Split:** balanced training set (4,605 images per class), 1,000-image
   held-out test set (500 per class)
