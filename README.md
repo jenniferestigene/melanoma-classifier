@@ -133,16 +133,18 @@ Colab.
 
 ```
 melanoma-classifier/
-├── preprocess.py           # raw images → .npy tensors
-├── model.py                # CNN architecture (nn.Module)
-├── train.py                # training loop, writes training_log.csv
-├── test.py                 # evaluation + confusion matrix
-├── visualize_training.py   # builds training_curves.png from the log
-├── requirements.txt
-├── training_log.csv        # metrics from the reported run
-├── results.md              # training curves, metrics, experiment log
 ├── assets/
 │   ├── training_curves.png
 │   └── confusion_matrix.png
-└── README.md
+├── .gitignore
+├── LICENSE
+├── README.md
+├── model.py                # CNN architecture (nn.Module)
+├── preprocess.py            # raw images → .npy tensors
+├── requirements.txt
+├── results.md               # training curves, metrics, experiment log
+├── test.py                  # evaluation + confusion matrix
+├── train.py                 # training loop, writes training_log.csv
+├── training_log.csv         # metrics from the reported run
+└── visualize_training.py    # builds training_curves.png from the log
 ```
