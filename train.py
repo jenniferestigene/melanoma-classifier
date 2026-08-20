@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import csv
 from model import Net
 
 
@@ -31,6 +32,10 @@ loss_function = nn.CrossEntropyLoss()
 
 batch_size = 100
 epochs = 20
+
+log_file = open("training_log.csv", "w", newline="")
+log_writer = csv.writer(log_file)
+log_writer.writerow(["epoch", "avg_loss", "val_accuracy"])
 
 
 for epoch in range(epochs):
@@ -72,6 +77,11 @@ for epoch in range(epochs):
     val_accuracy = correct / total
     print(f"Epoch {epoch+1}/{epochs} - avg loss: {avg_loss:.4f} - val accuracy: {val_accuracy:.4f}")
 
+    log_writer.writerow([epoch+1, round(avg_loss, 4), round(val_accuracy, 4)])
+
+
+log_file.close()
 
 torch.save(net.state_dict(), "saved_model.pth")
 print("Model saved to saved_model.pth")
+print("Training log saved to training_log.csv")
