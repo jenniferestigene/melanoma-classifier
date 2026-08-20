@@ -11,9 +11,6 @@ net = Net().to(device)
 net.load_state_dict(torch.load("saved_model.pth", map_location=device))
 net.eval()
 
-mean = torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1).to(device)
-std = torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1).to(device)
-
 
 testing_data = np.load("melanoma_testing_data.npy", allow_pickle=True)
 
@@ -29,10 +26,7 @@ total = 0
 with torch.no_grad():
     for i in range(len(test_X)):
 
-        img = test_X[i].view(-1, 3, img_size, img_size).to(device)
-        img = (img - mean) / std
-
-        output = net(img)[0]
+        output = net(test_X[i].view(-1, 3, img_size, img_size).to(device))[0]
 
         if output[0] >= output[1]:
             guess = "Benign"
