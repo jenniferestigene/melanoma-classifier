@@ -222,3 +222,5 @@ melanoma_cancer_dataset/
 melanoma_training_data.npy
 melanoma_testing_data.npy
 saved_model.pth
+.DS_Store
+
